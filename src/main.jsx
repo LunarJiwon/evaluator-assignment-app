@@ -3,6 +3,12 @@ import { createRoot } from 'react-dom/client';
 import { Shuffle, Users, Trash2, Copy, RotateCcw, Plus, AlertCircle } from 'lucide-react';
 import './style.css';
 
+const MAX_EVALUATOR_ASSIGNMENTS = 3;
+
+function normalizeEvaluatorCount(value) {
+  return Math.min(MAX_EVALUATOR_ASSIGNMENTS, Math.max(1, Math.floor(Number(value) || 1)));
+}
+
 function App() {
   const [rawNames, setRawNames] = useState('홍길동\n김철수\n이영희'); // 초기값
   const [evaluatorCount, setEvaluatorCount] = useState(3);
@@ -37,34 +43,43 @@ function App() {
     return copied;
   }
 
+  function createBalancedAssignments(names, count) {
+    const shuffledPeople = shuffleArray(names);
+    const offsets = shuffleArray(
+      Array.from({ length: shuffledPeople.length - 1 }, (_, index) => index + 1),
+    ).slice(0, count);
+
+    return shuffledPeople.map((person, index) => {
+      const evaluators = offsets.map((offset) => {
+        const evaluatorIndex = (index + offset) % shuffledPeople.length;
+        return shuffledPeople[evaluatorIndex];
+      });
+
+      return { person, evaluators: shuffleArray(evaluators) };
+    });
+  }
+
   // 채점 배정 로직
   function generateAssignments() {
     setCopied(false);
     setError('');
+    const assignmentCount = normalizeEvaluatorCount(evaluatorCount);
 
-    if (!Number.isInteger(evaluatorCount) || evaluatorCount < 1) {
-      setAssignments([]);
-      setError('배정 인원은 1명 이상으로 입력해주세요.');
-      return;
+    if (assignmentCount !== evaluatorCount) {
+      setEvaluatorCount(assignmentCount);
     }
 
-    if (people.length <= evaluatorCount) {
+    if (people.length <= assignmentCount) {
       setAssignments([]);
       setError(
-        `각 사람에게 본인을 제외한 평가자 ${evaluatorCount}명을 배정하려면 최소 ${
-          evaluatorCount + 1
+        `각 사람에게 본인을 제외한 평가자 ${assignmentCount}명을 배정하려면 최소 ${
+          assignmentCount + 1
         }명이 필요합니다.`,
       );
       return;
     }
 
-    const result = people.map((person) => {
-      const candidates = people.filter((candidate) => candidate !== person); // 평가 대상자 제외 배정
-      const evaluators = shuffleArray(candidates).slice(0, evaluatorCount);
-      return { person, evaluators };
-    });
-
-    setAssignments(result);
+    setAssignments(createBalancedAssignments(people, assignmentCount));
   }
 
   function clearAll() {
@@ -152,10 +167,10 @@ function App() {
                 type="number"
                 min="1"
                 step="1"
-                max={Math.max(1, people.length - 1)}
+                max={MAX_EVALUATOR_ASSIGNMENTS}
                 value={evaluatorCount}
                 onChange={(event) => {
-                  const nextValue = Math.max(1, Math.floor(Number(event.target.value) || 1));
+                  const nextValue = normalizeEvaluatorCount(event.target.value);
                   setEvaluatorCount(nextValue);
                   setAssignments([]);
                   setError('');
