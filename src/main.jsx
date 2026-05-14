@@ -5,6 +5,7 @@ import './style.css';
 
 function App() {
   const [rawNames, setRawNames] = useState('홍길동\n김철수\n이영희'); // 초기값
+  const [evaluatorCount, setEvaluatorCount] = useState(3);
   const [assignments, setAssignments] = useState([]);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -41,15 +42,25 @@ function App() {
     setCopied(false);
     setError('');
 
-    if (people.length < 4) {
+    if (!Number.isInteger(evaluatorCount) || evaluatorCount < 1) {
       setAssignments([]);
-      setError('각 사람에게 본인을 제외한 평가자 3명을 배정하려면 최소 4명이 필요합니다.');
+      setError('배정 인원은 1명 이상으로 입력해주세요.');
+      return;
+    }
+
+    if (people.length <= evaluatorCount) {
+      setAssignments([]);
+      setError(
+        `각 사람에게 본인을 제외한 평가자 ${evaluatorCount}명을 배정하려면 최소 ${
+          evaluatorCount + 1
+        }명이 필요합니다.`,
+      );
       return;
     }
 
     const result = people.map((person) => {
       const candidates = people.filter((candidate) => candidate !== person); // 평가 대상자 제외 배정
-      const evaluators = shuffleArray(candidates).slice(0, 3); // 무작위 3명
+      const evaluators = shuffleArray(candidates).slice(0, evaluatorCount);
       return { person, evaluators };
     });
 
@@ -95,10 +106,10 @@ function App() {
             <div className="badge">
               <Users size={16} /> 랜덤 평가자 배정기
             </div>
-            <h1>사람별 평가자 3명 자동 배정</h1>
+            <h1>사람별 평가자 {evaluatorCount}명 자동 배정</h1>
             <p>
               사람 이름을 한 줄에 한 명씩 입력하면, 각 사람마다 본인을 제외한 입력자 중
-              3명을 임의로 평가자로 배정합니다.
+              설정한 인원을 임의로 평가자로 배정합니다.
             </p>
           </div>
 
@@ -135,6 +146,24 @@ function App() {
               placeholder={'예시)\n김민수\n이서연\n박지훈\n최유진'}
             />
 
+            <label className="countField">
+              <span>사람별 배정 인원</span>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                max={Math.max(1, people.length - 1)}
+                value={evaluatorCount}
+                onChange={(event) => {
+                  const nextValue = Math.max(1, Math.floor(Number(event.target.value) || 1));
+                  setEvaluatorCount(nextValue);
+                  setAssignments([]);
+                  setError('');
+                  setCopied(false);
+                }}
+              />
+            </label>
+
             <div className="stats">
               <div className="statBox">
                 <span>인식된 사람 수</span>
@@ -143,6 +172,10 @@ function App() {
               <div className="statBox warning">
                 <span>중복 제거 수</span>
                 <strong>{duplicateCount}</strong>
+              </div>
+              <div className="statBox accent">
+                <span>필요 최소 인원</span>
+                <strong>{evaluatorCount + 1}</strong>
               </div>
             </div>
 
@@ -175,7 +208,10 @@ function App() {
                   <Shuffle size={38} />
                 </div>
                 <strong>아직 배정 결과가 없습니다.</strong>
-                <p>왼쪽에 사람을 4명 이상 입력한 뒤 배정하기 버튼을 눌러주세요.</p>
+                <p>
+                  왼쪽에 사람을 {evaluatorCount + 1}명 이상 입력한 뒤 배정하기 버튼을
+                  눌러주세요.
+                </p>
               </div>
             ) : (
               <div className="assignmentList">

@@ -10,6 +10,7 @@ body {
 }
 
 button,
+input,
 textarea {
   font: inherit;
 }
@@ -197,6 +198,40 @@ textarea:focus {
   box-shadow: 0 0 0 4px rgba(103, 232, 249, 0.14);
 }
 
+.countField {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 20px;
+  padding: 14px 16px;
+}
+
+.countField span {
+  color: #cbd5e1;
+  font-weight: 800;
+}
+
+.countField input {
+  width: 96px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  border-radius: 14px;
+  outline: none;
+  padding: 10px 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.countField input:focus {
+  border-color: rgba(103, 232, 249, 0.55);
+  box-shadow: 0 0 0 4px rgba(103, 232, 249, 0.14);
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -224,6 +259,10 @@ textarea:focus {
 
 .statBox.warning strong {
   color: #fde68a;
+}
+
+.statBox.accent strong {
+  color: #c4b5fd;
 }
 
 .errorBox {
@@ -383,6 +422,15 @@ textarea:focus {
 
   .stats {
     grid-template-columns: 1fr;
+  }
+
+  .countField {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .countField input {
+    width: 100%;
   }
 
   textarea {
